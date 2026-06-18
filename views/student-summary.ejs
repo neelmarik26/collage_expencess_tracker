@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Summary | Expense Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-100 text-slate-900">
+  <div class="max-w-7xl mx-auto px-4 py-8">
+    <header class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
+      <div>
+        <h1 class="text-3xl font-bold">Student Payment Summary</h1>
+        <p class="text-slate-600 mt-1">Overview of all students and their payment status.</p>
+      </div>
+      <div class="flex gap-3">
+        <a href="/admin/dashboard" class="px-4 py-2 rounded-2xl bg-indigo-600 text-white hover:bg-indigo-700">Back to Dashboard</a>
+        <a href="/logout" class="px-4 py-2 rounded-2xl bg-red-600 text-white hover:bg-red-700">Logout</a>
+      </div>
+    </header>
+
+    <% if (error) { %>
+      <div class="mb-4 rounded-2xl bg-red-100 text-red-700 p-4"><%= error %></div>
+    <% } %>
+
+    <section class="mb-10">
+      <h2 class="text-2xl font-semibold mb-6">Payment Status Overview</h2>
+      <div class="overflow-x-auto rounded-3xl bg-white shadow-sm border border-slate-200">
+        <table class="min-w-full divide-y divide-slate-200 text-left">
+          <thead class="bg-slate-50">
+            <tr>
+              <th class="px-6 py-4 text-sm font-semibold text-slate-700">Student Name</th>
+              <th class="px-6 py-4 text-sm font-semibold text-slate-700">Roll Number</th>
+              <th class="px-6 py-4 text-sm font-semibold text-slate-700">Role</th>
+              <th class="px-6 py-4 text-sm font-semibold text-slate-700">Total Due</th>
+              <th class="px-6 py-4 text-sm font-semibold text-slate-700">Paid Amount</th>
+              <th class="px-6 py-4 text-sm font-semibold text-slate-700">Remaining Due</th>
+              <th class="px-6 py-4 text-sm font-semibold text-slate-700">Bills Paid</th>
+              <th class="px-6 py-4 text-sm font-semibold text-slate-700">Bills Due</th>
+              <th class="px-6 py-4 text-sm font-semibold text-slate-700">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200">
+            <% studentSummary.forEach((entry) => { %>
+              <tr class="hover:bg-slate-50">
+                <td class="px-6 py-4 whitespace-nowrap font-semibold"><%= entry.student.name %></td>
+                <td class="px-6 py-4 whitespace-nowrap"><%= entry.student.rollNumber %></td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="rounded-full px-3 py-1 text-xs font-semibold <%= entry.student.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-700' %>">
+                    <%= entry.student.role.charAt(0).toUpperCase() + entry.student.role.slice(1) %>
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">₹<%= entry.totalDue.toFixed(2) %></td>
+                <td class="px-6 py-4 whitespace-nowrap text-emerald-600 font-semibold">₹<%= entry.paidAmount.toFixed(2) %></td>
+                <td class="px-6 py-4 whitespace-nowrap <%= entry.dueAmount > 0 ? 'text-rose-600 font-semibold' : 'text-emerald-600' %>" >₹<%= entry.dueAmount.toFixed(2) %></td>
+                <td class="px-6 py-4 whitespace-nowrap text-emerald-600 font-semibold"><%= entry.paid %></td>
+                <td class="px-6 py-4 whitespace-nowrap text-rose-600 font-semibold"><%= entry.due %></td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="rounded-full px-3 py-1 text-sm font-semibold <%= entry.status === 'Paid' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700' %>">
+                    <%= entry.status %>
+                  </span>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="mt-10">
+      <h2 class="text-2xl font-semibold mb-6">Expenses & Bills Uploaded</h2>
+      <div class="space-y-3">
+        <% if (expenses && expenses.length > 0) { %>
+          <% expenses.forEach((expense) => { %>
+            <div class="rounded-2xl bg-white p-5 border-l-4 border-rose-400 shadow-sm hover:shadow-md transition">
+              <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div class="flex-1">
+                  <h3 class="font-semibold text-lg text-slate-900"><%= expense.title %></h3>
+                  <p class="text-sm text-slate-600 mt-1"><%= expense.description || 'No description' %></p>
+                  <p class="text-xs text-slate-500 mt-2">By <strong><%= expense.createdBy ? expense.createdBy.name : 'Unknown' %></strong> on <%= new Date(expense.date).toDateString() %></p>
+                </div>
+                <div class="text-right">
+                  <p class="text-2xl font-bold text-rose-600">₹<%= expense.amount.toFixed(2) %></p>
+                  <% if (expense.billImage) { %>
+                    <a href="<%= expense.billImage %>" target="_blank" class="text-xs text-indigo-600 hover:underline mt-2 inline-block">View Bill</a>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+          <% }); %>
+        <% } else { %>
+          <div class="rounded-2xl bg-white p-6 border-l-4 border-slate-300 text-center text-slate-500">
+            <p>No expenses recorded yet.</p>
+          </div>
+        <% } %>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // Auto-refresh session every 3 seconds to detect role changes
+    setInterval(async () => {
+      try {
+        const response = await fetch('/check-session');
+        const data = await response.json();
+        if (data.role && data.role !== '<%= currentUser.role %>') {
+          console.log('Role changed to:', data.role);
+          location.reload();
+        }
+      } catch (err) {
+        console.error('Session check failed:', err);
+      }
+    }, 3000);
+  </script>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    if (typeof io !== 'undefined') {
+      const socket = io();
+      socket.on('paymentUpdated', () => location.reload());
+      socket.on('expenseCreated', () => location.reload());
+      socket.on('billCreated', () => location.reload());
+      socket.on('roleChanged', () => location.reload());
+    }
+  </script>
+</body>
+</html>

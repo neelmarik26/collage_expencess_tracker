@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Admins | Admin Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-100 text-slate-900">
+  <div class="max-w-7xl mx-auto px-4 py-8">
+    <header class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
+      <div>
+        <h1 class="text-3xl font-bold">Manage Admins</h1>
+        <p class="text-slate-600 mt-1">Superadmin controls for user management.</p>
+      </div>
+      <div class="flex gap-3 flex-wrap">
+        <span class="px-4 py-2 rounded-2xl bg-purple-200 text-purple-700 font-semibold">Superadmin Mode</span>
+        <span class="px-4 py-2 rounded-2xl bg-slate-200 text-slate-700">Signed in as <strong><%= currentUser.name %></strong></span>
+        <a href="/admin/dashboard" class="px-4 py-2 rounded-2xl bg-indigo-600 text-white hover:bg-indigo-700">Back to Dashboard</a>
+        <a href="/logout" class="px-4 py-2 rounded-2xl bg-red-600 text-white hover:bg-red-700">Logout</a>
+      </div>
+    </header>
+
+    <% if (error) { %>
+      <div class="mb-4 rounded-2xl bg-red-100 text-red-700 p-4"><%= error %></div>
+    <% } %>
+    <% if (success) { %>
+      <div class="mb-4 rounded-2xl bg-emerald-100 text-emerald-700 p-4"><%= success %></div>
+    <% } %>
+
+    <section class="grid gap-6 mb-10">
+      <div class="rounded-3xl bg-white p-6 shadow-sm">
+        <h2 class="text-2xl font-semibold mb-4">Pending Admin Requests</h2>
+        <% if (pendingRequests && pendingRequests.length > 0) { %>
+          <div class="space-y-3">
+            <% pendingRequests.forEach((u) => { %>
+              <div class="rounded-2xl border border-slate-200 p-4 flex items-center justify-between">
+                <div>
+                  <p class="font-semibold text-lg"><%= u.name %></p>
+                  <p class="text-sm text-slate-500">Roll: <strong><%= u.rollNumber %></strong></p>
+                  <p class="text-sm text-slate-500">Requested admin access</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <form action="/admin/approve/<%= u._id %>" method="POST" style="display:inline;">
+                    <button type="submit" class="rounded-2xl bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700 transition">Approve</button>
+                  </form>
+                  <form action="/admin/reject/<%= u._id %>" method="POST" style="display:inline;">
+                    <button type="submit" class="rounded-2xl bg-rose-600 px-4 py-2 text-white hover:bg-rose-700 transition">Reject</button>
+                  </form>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        <% } else { %>
+          <p class="text-slate-500">No pending requests.</p>
+        <% } %>
+      </div>
+
+      <div class="rounded-3xl bg-white p-6 shadow-sm">
+        <h2 class="text-2xl font-semibold mb-4">Current Admins</h2>
+        <% if (admins && admins.length > 0) { %>
+          <div class="overflow-x-auto rounded-2xl border border-slate-200">
+            <table class="min-w-full divide-y divide-slate-200 text-left">
+              <thead class="bg-slate-50">
+                <tr>
+                  <th class="px-6 py-4 text-sm font-semibold text-slate-700">Name</th>
+                  <th class="px-6 py-4 text-sm font-semibold text-slate-700">Roll Number</th>
+                  <th class="px-6 py-4 text-sm font-semibold text-slate-700">Action</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200">
+                <% admins.forEach((admin) => { %>
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap"><strong><%= admin.name %></strong></td>
+                    <td class="px-6 py-4 whitespace-nowrap"><%= admin.rollNumber %></td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <form action="/admin/delete-admin/<%= admin._id %>" method="POST" style="display:inline;" onsubmit="return confirm('Demote this admin to student?');">
+                        <button type="submit" class="rounded-2xl bg-orange-600 px-4 py-2 text-white hover:bg-orange-700 transition">Demote to Student</button>
+                      </form>
+                    </td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+        <% } else { %>
+          <p class="text-slate-500">No admins currently assigned.</p>
+        <% } %>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

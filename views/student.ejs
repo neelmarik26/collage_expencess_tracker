@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Dashboard | Expense Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-100 text-slate-900">
+  <div class="max-w-6xl mx-auto px-4 py-8">
+    <header class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
+      <div>
+        <h1 class="text-3xl font-bold">Student Dashboard</h1>
+        <p class="text-slate-600 mt-1">Your bills and payment status.</p>
+      </div>
+      <div class="flex gap-3">
+        <span class="px-4 py-2 rounded-2xl bg-slate-200 text-slate-700">Welcome, <strong><%= currentUser.name %></strong></span>
+        <a href="/logout" class="px-4 py-2 rounded-2xl bg-red-600 text-white hover:bg-red-700">Logout</a>
+      </div>
+    </header>
+
+    <section class="grid gap-6 md:grid-cols-2 mb-10">
+      <div class="rounded-3xl bg-white p-6 shadow-sm">
+        <h2 class="text-xl font-semibold mb-3">Total Due</h2>
+        <p class="text-4xl font-bold text-rose-600">₹<%= totalDue.toFixed(2) %></p>
+      </div>
+      <div class="rounded-3xl bg-white p-6 shadow-sm">
+        <h2 class="text-xl font-semibold mb-3">Total Paid</h2>
+        <p class="text-4xl font-bold text-emerald-600">₹<%= totalPaid.toFixed(2) %></p>
+      </div>
+    </section>
+
+    <section class="mb-10">
+      <div class="rounded-3xl bg-gradient-to-br from-indigo-50 to-slate-50 p-8 shadow-md border border-indigo-100">
+        <h2 class="text-2xl font-bold mb-6 text-indigo-900">Budget & Collection Overview</h2>
+        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div class="rounded-2xl bg-white p-5 shadow-sm border-l-4 border-indigo-500">
+            <p class="text-xs font-semibold text-slate-600 uppercase tracking-wider">Total Budget</p>
+            <p class="text-3xl font-bold text-indigo-600 mt-2">₹<%= (typeof totalBudget !== 'undefined' ? totalBudget : budget).toFixed(2) %></p>
+          </div>
+          <div class="rounded-2xl bg-white p-5 shadow-sm border-l-4 border-emerald-500">
+            <p class="text-xs font-semibold text-slate-600 uppercase tracking-wider">Total Collected All</p>
+            <p class="text-3xl font-bold text-emerald-600 mt-2">₹<%= totalCollected.toFixed(2) %></p>
+          </div>
+          <div class="rounded-2xl bg-white p-5 shadow-sm border-l-4 border-rose-500">
+            <p class="text-xs font-semibold text-slate-600 uppercase tracking-wider">Total Expenses</p>
+            <p class="text-3xl font-bold text-rose-600 mt-2">₹<%= totalExpenses.toFixed(2) %></p>
+          </div>
+          <div class="rounded-2xl bg-white p-5 shadow-sm border-l-4 <%= netBalance >= 0 ? 'border-emerald-500' : 'border-rose-500' %>">
+            <p class="text-xs font-semibold text-slate-600 uppercase tracking-wider">Net Balance</p>
+            <p class="text-3xl font-bold <%= netBalance >= 0 ? 'text-emerald-600' : 'text-rose-600' %> mt-2">₹<%= netBalance.toFixed(2) %></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="text-2xl font-semibold mb-4">Bill History & Payments</h2>
+      <div class="space-y-4">
+        <% billDetails.forEach((bd) => { %>
+          <div class="rounded-2xl bg-white p-4 border border-slate-200">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="font-semibold"><%= bd.bill.title %> — ₹<%= bd.bill.totalAmount.toFixed(2) %></h3>
+                <p class="text-sm text-slate-500">Uploaded on <%= new Date(bd.bill.date).toDateString() %></p>
+                <% if (bd.bill.billImage) { %>
+                  <a href="<%= bd.bill.billImage %>" target="_blank" class="mt-2 inline-block text-sm font-semibold text-indigo-600 hover:underline">View Cover</a>
+                <% } %>
+              </div>
+              <div class="text-right">
+                <p class="text-sm">Your due: <strong>₹<%= bd.yourPayment.amountDue.toFixed(2) %></strong></p>
+                <p class="text-sm">Status: <strong><%= bd.yourPayment.status %></strong></p>
+              </div>
+            </div>
+            <div class="mt-3 grid md:grid-cols-2 gap-4">
+              <div>
+                <p class="text-sm font-semibold">Paid (<%= bd.payers.length %>)</p>
+                <ul class="text-sm text-slate-600 list-disc list-inside">
+                  <% bd.payers.forEach(p => { %>
+                    <li><%= p.name %> (<%= p.rollNumber %>)</li>
+                  <% }); %>
+                </ul>
+              </div>
+              <div>
+                <p class="text-sm font-semibold">Not Paid (<%= bd.nonPayers.length %>)</p>
+                <ul class="text-sm text-slate-600 list-disc list-inside">
+                  <% bd.nonPayers.forEach(p => { %>
+                    <li><%= p.name %> (<%= p.rollNumber %>)</li>
+                  <% }); %>
+                </ul>
+              </div>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="text-2xl font-semibold mb-4">Your Bills</h2>
+      <div class="overflow-x-auto rounded-3xl bg-white shadow-sm border border-slate-200">
+        <table class="min-w-full divide-y divide-slate-200 text-left">
+          <thead class="bg-slate-50">
+            <tr>
+              <th class="px-6 py-4 text-sm font-semibold text-slate-700">Bill</th>
+              <th class="px-6 py-4 text-sm font-semibold text-slate-700">Amount</th>
+              <th class="px-6 py-4 text-sm font-semibold text-slate-700">Status</th>
+              <th class="px-6 py-4 text-sm font-semibold text-slate-700">Uploaded</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200">
+            <% payments.forEach((payment) => { %>
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap"><%= payment.billId ? payment.billId.title : 'Deleted bill' %></td>
+                <td class="px-6 py-4 whitespace-nowrap">₹<%= payment.amountDue.toFixed(2) %></td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="rounded-full px-3 py-1 text-sm font-semibold <%= payment.status === 'Paid' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700' %>"><%= payment.status %></span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap"><%= payment.billId ? payment.billId.date.toDateString() : 'Unknown' %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="mt-12 mb-8">
+      <div class="rounded-3xl bg-slate-50 p-8 shadow-md border-2 border-slate-200">
+        <h2 class="text-2xl font-bold mb-6 text-slate-900">Expenses History & Budget Impact</h2>
+        <div class="space-y-3">
+          <% if (expenses && expenses.length > 0) { %>
+            <% expenses.forEach((e) => { %>
+              <div class="rounded-2xl bg-white p-4 border-l-4 border-rose-400 shadow-sm hover:shadow-md transition">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="flex-1">
+                    <h3 class="font-semibold text-lg text-slate-900"><%= e.title %></h3>
+                    <p class="text-sm text-slate-600 mt-1"><%= e.description || 'No description' %></p>
+                    <p class="text-xs text-slate-500 mt-2">By <strong><%= e.createdBy ? e.createdBy.name : 'Unknown' %></strong> on <%= new Date(e.date).toDateString() %></p>
+                    <% if (e.billImage) { %>
+                      <a href="<%= e.billImage %>" target="_blank" class="mt-2 inline-block text-sm font-semibold text-indigo-600 hover:underline">View Bill</a>
+                    <% } %>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-2xl font-bold text-rose-600">₹<%= e.amount.toFixed(2) %></p>
+                  </div>
+                </div>
+              </div>
+            <% }); %>
+          <% } else { %>
+            <div class="rounded-2xl bg-white p-6 border-l-4 border-slate-300 text-center text-slate-500">
+              <p>No expenses recorded yet.</p>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // Auto-refresh session every 3 seconds to detect role changes
+    setInterval(async () => {
+      try {
+        const response = await fetch('/check-session');
+        const data = await response.json();
+        if (data.role && data.role !== '<%= currentUser.role %>') {
+          console.log('Role changed to:', data.role);
+          location.reload();
+        }
+      } catch (err) {
+        console.error('Session check failed:', err);
+      }
+    }, 3000);
+  </script>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    if (typeof io !== 'undefined') {
+      const socket = io();
+      socket.on('paymentUpdated', () => location.reload());
+      socket.on('expenseCreated', () => location.reload());
+      socket.on('billCreated', () => location.reload());
+      socket.on('roleChanged', () => location.reload());
+    }
+  </script>
+</body>
+</html>
